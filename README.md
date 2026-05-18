@@ -2,248 +2,381 @@
 
 # Playtube
 
-**A full-stack YouTube-style experience** — watch, upload, subscribe, manage a studio, playlists, library, and community posts — with cookie-based auth, Cloudinary media, and a production-minded React UI.
+A full-stack video platform for **watching, uploading, and managing content** — channels, playlists, studio tools, library, and community posts — built with **React + Vite** and **Node.js + Express + MongoDB**.
 
-[![Node.js](https://img.shields.io/badge/Node.js-LTS-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Live App](https://img.shields.io/badge/Live_App-playtube--six.vercel.app-ef4444?style=for-the-badge)](https://playtube-six.vercel.app/)
+[![API](https://img.shields.io/badge/API-Render-46E3B7?style=for-the-badge)](https://playtube-7nj8.onrender.com/api/v1/healthcheck)
+
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas%20%7C%20local-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Node.js](https://img.shields.io/badge/Node.js-20+-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![Express](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)](https://expressjs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 
 </div>
 
----
-
-## Live deployment
-
-| | Link |
-|---|------|
-| **Frontend** (Vercel — main app) | [**https://playtube-six.vercel.app/**](https://playtube-six.vercel.app/) |
-| **Backend API** (Render — Express) | [**https://playtube-7nj8.onrender.com**](https://playtube-7nj8.onrender.com) |
-| **API health check** | [`/api/v1/healthcheck`](https://playtube-7nj8.onrender.com/api/v1/healthcheck) |
-
-The production SPA is built with **`VITE_API_URL`** pointing at the Render origin above. The API serves routes under **`/api/v1/...`** only; visiting the API **root** (`/`) may show `Cannot GET /` — that is expected. Use the [health check](https://playtube-7nj8.onrender.com/api/v1/healthcheck) link to confirm the server is responding.
+> **Note:** This is an independent **portfolio / learning** project. It is not affiliated with YouTube or any commercial video service. Upload only content you have the **rights** to share.
 
 ---
 
-## Contents
+## Why this project exists
 
-- [Live deployment](#live-deployment)
-- [Overview](#overview)
-- [Features](#features)
-- [Architecture](#architecture)
-- [Repository layout](#repository-layout)
-- [Quick start](#quick-start)
-- [Production deploy (Render + Vercel + Atlas)](#production-deploy-render--vercel--atlas)
-- [Environment](#environment)
-- [Scripts](#scripts)
-- [Production build](#production-build)
-- [Implementation phases](#implementation-phases)
+Playtube was built to practice **end-to-end full-stack development**: cookie-based auth with refresh, REST APIs, file uploads to cloud storage, paginated feeds, and a production-minded React UI (toasts, lazy routes, accessibility basics). It demonstrates how a modern SPA and a Node API work together with **MongoDB Atlas** and **Cloudinary** in a real deploy setup (**Vercel + Render**).
 
 ---
 
-## Overview
+## Demo
 
-Playtube pairs an **Express 5 + MongoDB** REST API under `/api/v1` with a **Vite + React 19 + TypeScript** SPA. The browser uses **HTTP-only cookies** for access and refresh tokens; the frontend wraps `fetch` with automatic refresh on `401`.
+| | URL |
+|---|-----|
+| **Live app (frontend)** | [https://playtube-six.vercel.app/](https://playtube-six.vercel.app/) |
+| **API (backend)** | [https://playtube-7nj8.onrender.com](https://playtube-7nj8.onrender.com) |
+| **Health check** | [https://playtube-7nj8.onrender.com/api/v1/healthcheck](https://playtube-7nj8.onrender.com/api/v1/healthcheck) |
 
-Media (avatars, covers, videos, thumbnails) is uploaded through the API to **Cloudinary**. Local development proxies `/api` to the backend so you can run both servers without CORS friction.
+The API only defines routes under **`/api/v1/...`**. Opening the API root may show `Cannot GET /` — that is normal. Use the health check link to verify the server.
 
----
+### Screenshots
 
-## Production deploy (Render + Vercel + Atlas)
 
-**Order: deploy the API first, then the SPA** (the UI build needs `VITE_API_URL`).
+#### Home feed
 
-Full checklist, env tables, and troubleshooting: **[`docs/DEPLOY.md`](docs/DEPLOY.md)**.
+![Home feed](./frontend/public/readme/home.png)
 
-Summary:
+#### Sign in / Register
 
-1. **Atlas** — allow network access; `MONGODB_URI` without a `/playtube` suffix (the app appends `/playtube`).
-2. **Render** — Web service, root `backend`, `npm install` / `npm start`, set `NODE_ENV`, `MONGODB_URI`, `CORS_ORIGIN` (your Vercel URL), **`COOKIE_SAMESITE=none`**, JWT + Cloudinary.
-3. **Vercel** — root `frontend`, set **`VITE_API_URL`** to your Render API origin (no trailing slash).
-4. Update **`CORS_ORIGIN`** on Render to match the final Vercel URL and redeploy the API if needed.
+![Authentication](./frontend/public/readme/registerr.png)
 
-Optional: [`render.yaml`](render.yaml) Blueprint skeleton (secrets still in the Render dashboard).
+#### Watch page
+
+![Watch page](./frontend/public/readme/watch.png)
+
+#### Studio page
+
+![Studio page](./frontend/public/readme/studio.png)
+
+#### Channel page
+
+![Channel page](./frontend/public/readme/channel.png)
+
+
 
 ---
 
 ## Features
 
-| Area | What you get |
-|------|----------------|
-| **Auth** | Register, login, logout, protected routes, session refresh |
-| **Home** | Paginated video feed, client-side search on loaded items, infinite scroll |
-| **Watch** | Player, metadata, like, subscribe, comments, watch history, save to playlist |
-| **Channel** | Profile, banner, subscribe, videos & load more, playlists, **Community** (tweets) |
-| **Studio** | Dashboard stats, CRUD-style video management, publish toggle |
-| **Playlists** | View; owners edit meta, remove videos, delete playlist |
-| **Library** | History, liked videos, subscriptions + merged feed |
-| **Settings** | Profile PATCH, password change, avatar & cover multipart uploads |
-| **UX** | Global toasts, route-level lazy loading + Suspense, page titles (`react-helmet-async`), skip link and focus-visible affordances |
+- **Authentication** — Register, login, logout, JWT in HTTP-only cookies, automatic refresh on `401`
+- **Home** — Paginated video feed, infinite scroll, search on loaded videos
+- **Watch** — HTML5 player, likes, subscribe, comments, watch history, save to playlist
+- **Channel** — Profile, banner, videos, playlists, subscribe, **Community** posts
+- **Studio** — Dashboard stats, upload, publish toggle, edit and delete videos
+- **Playlists** — Create, view, edit; add/remove videos; owner delete
+- **Library** — Watch history, liked videos, subscriptions + merged feed
+- **Settings** — Profile, password, avatar and cover (multipart)
+
+---
+
+## Tech stack
+
+### Frontend
+
+- React 19, React Router 7, TypeScript
+- Vite 8, ESLint
+- `react-helmet-async` (per-page titles)
+
+### Backend
+
+- Node.js 20+, Express 5
+- Mongoose 9, JWT, Multer, CORS, `cookie-parser`
+- Cloudinary (media storage)
+
+### Database & hosting
+
+- **MongoDB Atlas** (database name `playtube` appended by the API)
+- **Frontend:** [Vercel](https://vercel.com)
+- **Backend:** [Render](https://render.com)
 
 ---
 
 ## Architecture
 
 ```mermaid
-flowchart LR
-  subgraph client [Browser]
-    UI[React SPA]
+flowchart TB
+  subgraph browser [Browser]
+    SPA[React SPA on Vercel]
   end
-  subgraph dev [Local dev]
-    Vite[Vite :5173]
-    API[Express API :8001]
+  subgraph api [Backend on Render]
+    EX[Express /api/v1]
   end
-  subgraph data [Services]
-    DB[(MongoDB)]
-    CDN[Cloudinary]
+  subgraph services [Services]
+    MDB[(MongoDB Atlas)]
+    CLD[Cloudinary]
   end
-  UI -->|"/api proxied"| Vite
-  Vite --> API
-  UI -->|cookies| API
-  API --> DB
-  API --> CDN
+  SPA -->|HTTPS + cookies| EX
+  EX --> MDB
+  EX --> CLD
 ```
 
-In **production**, the static `dist/` app calls the API using `VITE_API_URL` (full origin, no trailing slash).
+**Auth flow (summary):** Login sets `accessToken` and `refreshToken` cookies on the API origin. The client uses `fetch` with `credentials: 'include'`. On `401`, the frontend calls refresh, then retries. Cross-origin production (Vercel + Render) uses `COOKIE_SAMESITE=none` and matching `CORS_ORIGIN`.
 
 ---
 
-## Repository layout
+## Project structure
 
-```
+```bash
 playtube/
-├── backend/          # Express API, Mongoose models, Cloudinary
-│   ├── .env.sample   # Copy → .env
-│   └── src/
-├── frontend/         # Vite + React + TypeScript
+├── backend/                 # Express API
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── models/
+│   │   ├── routes/          # Mounted under /api/v1/*
+│   │   ├── middlewares/
+│   │   └── app.js
+│   ├── .env.sample
+│   └── package.json
+├── frontend/                # Vite + React SPA
+│   ├── public/readme/       # README screenshots (add your PNGs here)
+│   ├── src/
+│   │   ├── api/             # API client + endpoint helpers
+│   │   ├── components/
+│   │   ├── context/         # Auth, toasts
+│   │   └── pages/
 │   ├── .env.example
-│   └── src/
-│       ├── api/      # Typed fetch helpers + endpoints
-│       ├── components/
-│       ├── context/  # Auth, toasts
-│       └── pages/
-└── README.md         # You are here
+└── README.md
 ```
-
-More detail for each package: [`backend/README.md`](backend/README.md) · [`frontend/README.md`](frontend/README.md).
 
 ---
 
-## Quick start
+## Installation
 
-### 1. Prerequisites
+### Prerequisites
 
-- **Node.js** (LTS)
-- **MongoDB** (local or Atlas)
-- A **[Cloudinary](https://cloudinary.com/)** account (uploads)
+- Node.js 20+
+- MongoDB (local or [Atlas](https://www.mongodb.com/atlas))
+- [Cloudinary](https://cloudinary.com/) account
 
-### 2. Backend
+### Clone the repository
+
+```bash
+git clone https://github.com/Neha-Codes295/playtube.git
+cd playtube
+```
+
+### Forking (optional)
+
+1. Open [github.com/Neha-Codes295/playtube](https://github.com/Neha-Codes295/playtube).
+2. Click **Fork**.
+3. Clone your fork: `git clone https://github.com/<your-username>/playtube.git`
+
+### Install dependencies
+
+**Backend**
 
 ```bash
 cd backend
-cp .env.sample .env
-# Edit .env: MONGODB_URI, JWT secrets, Cloudinary, CORS_ORIGIN (see below)
-
 npm install
-npm run dev
 ```
 
-Default API URL: **http://localhost:8001**
-
-### 3. Frontend
+**Frontend**
 
 ```bash
-cd frontend
+cd ../frontend
 npm install
-npm run dev
 ```
-
-Default UI: **http://localhost:5173**
-
-The Vite dev server proxies **`/api`** to `VITE_DEV_API_PROXY` if set, otherwise **http://localhost:8001**. All API calls use **`credentials: 'include'`** so cookies flow on the same site during dev.
 
 ---
 
-## Environment
+## Environment variables
 
-Do not commit real secrets. Use the sample files and keep `.env` gitignored.
+Never commit real `.env` files or paste secrets in issues or screenshots.
 
-### Backend (`backend/.env`)
+### Backend — `backend/.env`
 
-| Variable | Purpose |
-|----------|---------|
-| `PORT` | API port (default `8001`) |
-| `MONGODB_URI` | Base URI; app uses database `playtube` per backend constants |
-| `CORS_ORIGIN` | Allowed browser origin for cookies (e.g. `http://localhost:5173`) |
-| `ACCESS_TOKEN_SECRET` / `REFRESH_TOKEN_SECRET` | JWT signing (use long random strings in production) |
-| `ACCESS_TOKEN_EXPIRY` / `REFRESH_TOKEN_EXPIRY` | Token lifetimes |
-| `CLOUDINARY_*` | Cloud name, API key, API secret |
+Copy from [`backend/.env.sample`](backend/.env.sample):
 
-Full template: [`backend/.env.sample`](backend/.env.sample).
+```env
+PORT=8001
+NODE_ENV=development
+MONGODB_URI=mongodb+srv://USER:PASSWORD@cluster.mongodb.net
+CORS_ORIGIN=http://localhost:5173
+COOKIE_SAMESITE=lax
+ACCESS_TOKEN_SECRET=your_long_random_secret
+REFRESH_TOKEN_SECRET=your_other_long_random_secret
+ACCESS_TOKEN_EXPIRY=1d
+REFRESH_TOKEN_EXPIRY=10d
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+```
 
-### Frontend (`frontend/.env`)
+| Variable | Notes |
+|----------|--------|
+| `MONGODB_URI` | **No** `/playtube` suffix — the app appends `/playtube` |
+| `CORS_ORIGIN` | Exact SPA origin (local: `http://localhost:5173`; prod: `https://playtube-six.vercel.app`) |
+| `COOKIE_SAMESITE` | `lax` locally; **`none`** on Render when UI is on Vercel |
 
-| Variable | When |
-|----------|------|
-| `VITE_DEV_API_PROXY` | Optional; overrides default `http://localhost:8001` for the dev proxy target |
-| `VITE_API_URL` | **Required for production builds** — absolute API origin, no trailing slash (e.g. `https://api.example.com`) |
+### Frontend — `frontend/.env` (optional locally)
 
-Template: [`frontend/.env.example`](frontend/.env.example).
+See [`frontend/.env.example`](frontend/.env.example):
+
+```env
+# Local dev: usually leave empty; Vite proxies /api → localhost:8001
+# VITE_DEV_API_PROXY=http://localhost:8001
+
+# Production build (Vercel sets this in the dashboard):
+# VITE_API_URL=https://playtube-7nj8.onrender.com
+```
+
+---
+
+## Run locally
+
+Use **two terminals**.
+
+**Terminal 1 — API**
+
+```bash
+cd backend
+npm run dev
+```
+
+→ [http://localhost:8001](http://localhost:8001)  
+→ Health: [http://localhost:8001/api/v1/healthcheck](http://localhost:8001/api/v1/healthcheck)
+
+**Terminal 2 — UI**
+
+```bash
+cd frontend
+npm run dev
+```
+
+→ [http://localhost:5173](http://localhost:5173)
+
+Vite proxies `/api` to the backend. All API calls use `credentials: 'include'` for cookies.
+
+---
+
+## Usage
+
+1. Open the app → **Register** (avatar required) or **Sign in**.
+2. **Home** — browse videos; scroll to load more; use search on loaded items.
+3. **Watch** — play video; like, comment, subscribe, save to playlist (when signed in).
+4. **Upload** / **Studio** — publish and manage your videos (owner).
+5. **Channel** — your public page: videos, playlists, community tab.
+6. **Library** — history, liked, subscriptions.
+7. **Settings** — profile, password, avatar, cover.
+
+---
+
+## API endpoints
+
+Base URL (local): `http://localhost:8001`  
+Base URL (production): `https://playtube-7nj8.onrender.com`  
+
+All routes are prefixed with **`/api/v1`**. Auth routes marked 🔒 require a valid session cookie (or Bearer token where supported).
+
+### Health
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/healthcheck` | Service health |
+
+### Users & auth
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/users/register` | Register (multipart: avatar, optional cover) |
+| POST | `/users/login` | Login |
+| POST | `/users/logout` | 🔒 Logout |
+| POST | `/users/refresh-token` | Refresh access token |
+| GET | `/users/current-user` | 🔒 Current user |
+| PATCH | `/users/update-account` | 🔒 Update profile |
+| POST | `/users/change-password` | 🔒 Change password |
+| PATCH | `/users/avatar` | 🔒 Upload avatar |
+| PATCH | `/users/cover-image` | 🔒 Upload cover |
+| GET | `/users/c/:username` | Channel profile |
+| GET/POST | `/users/history` | 🔒 Watch history |
+
+### Videos
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/videos` | Public feed (paginated) |
+| GET | `/videos/:videoId` | Video detail |
+| POST | `/videos` | 🔒 Upload (multipart) |
+| GET | `/videos/my` | 🔒 Creator’s videos |
+| PATCH | `/videos/:videoId` | 🔒 Update metadata |
+| PATCH | `/videos/:videoId/publish` | 🔒 Toggle publish |
+| DELETE | `/videos/:videoId` | 🔒 Delete video |
+
+### Comments, likes, playlists, subscriptions, tweets, dashboard
+
+| Area | Highlights |
+|------|------------|
+| **Comments** | `GET/POST /comments/:videoId`, `PATCH/DELETE /comments/c/:commentId` |
+| **Likes** | `POST /likes/v/:videoId`, `GET /likes/videos`, comment/tweet likes |
+| **Playlists** | `POST /playlists`, `GET /playlists/u/:userId`, `GET/PATCH/DELETE /playlists/:id`, add/remove videos |
+| **Subscriptions** | `GET /subscriptions`, `POST /subscriptions/:channelId` |
+| **Tweets** | `GET /tweets/u/:userId`, `POST /tweets`, `PATCH/DELETE /tweets/:tweetId` |
+| **Dashboard** | `GET /dashboard/stats` 🔒 |
+
+---
+
+## Deployment
+
+| Layer | Platform | URL |
+|-------|----------|-----|
+| Frontend | Vercel | [playtube-six.vercel.app](https://playtube-six.vercel.app/) |
+| Backend | Render | [playtube-7nj8.onrender.com](https://playtube-7nj8.onrender.com) |
+| Database | MongoDB Atlas | Connection string in Render env |
+
+**Order:** deploy **API first** → set **`VITE_API_URL`** on Vercel → set **`CORS_ORIGIN`** on Render to your Vercel URL → redeploy API if needed.
+
+Full checklist: **[`docs/DEPLOY.md`](docs/DEPLOY.md)**
 
 ---
 
 ## Scripts
 
-| Location | Command | Description |
-|----------|---------|-------------|
-| `backend/` | `npm run dev` | Nodemon + Express with `dotenv` |
-| `backend/` | `npm start` | Production start (e.g. Render) |
+| Directory | Command | Description |
+|-----------|---------|-------------|
+| `backend/` | `npm run dev` | Development (nodemon) |
+| `backend/` | `npm start` | Production start |
 | `frontend/` | `npm run dev` | Vite dev server |
-| `frontend/` | `npm run build` | Typecheck + production bundle → `dist/` |
-| `frontend/` | `npm run preview` | Serve `dist/` locally |
+| `frontend/` | `npm run build` | Production build → `dist/` |
+| `frontend/` | `npm run preview` | Preview production build |
 | `frontend/` | `npm run lint` | ESLint |
 
 ---
 
-## Production build
+## Challenges faced
 
-```bash
-cd frontend
-set VITE_API_URL=https://playtube-7nj8.onrender.com
-npm run build
-```
-
-On **PowerShell**, use `$env:VITE_API_URL="https://playtube-7nj8.onrender.com"` instead of `set`.
-
-Deploy **`frontend/dist/`** behind your static host. Production uses **`VITE_API_URL=https://playtube-7nj8.onrender.com`** (no trailing slash). Ensure **`CORS_ORIGIN`** on Render matches **`https://playtube-six.vercel.app`** (exact origin, no path), or cookies and CORS will fail.
+- **Cross-origin cookies** — Vercel (UI) and Render (API) require `CORS_ORIGIN`, `COOKIE_SAMESITE=none`, and `credentials: 'include'` on the client.
+- **Media uploads** — Multipart video + thumbnail through Multer to Cloudinary; balancing payload size and free-tier cold starts on Render.
+- **Feed pagination** — Merging pages on the client without duplicate cards; infinite scroll vs explicit “load more” on filtered home search.
+- **Optional auth on public routes** — Channel and video detail use `optionalAuth` so guests can browse while signed-in users get subscription hints.
 
 ---
 
-## Implementation phases
+## Contributing
 
-High-level delivery map for this repo (phases are documentation only; not separate packages).
+Pull requests are welcome. For large changes, open an issue first to discuss what you would like to change.
 
-| Phase | Scope | Status |
-|-------|--------|--------|
-| 0 | App shell, layout, routes, API client, UI primitives | Done |
-| 1 | Design tokens, video card motion, responsive grid polish | Done |
-| 2 | Auth forms, session, `RequireAuth`, redirects | Done |
-| 3 | Home feed, pagination / infinite scroll, search on loaded set | Done |
-| 4 | Watch page, likes, subscribe, comments, history, save to playlist | Done |
-| 5 | Channel profile, videos, playlists, subscribe | Done |
-| 6 | Upload (multipart), Studio | Done |
-| 7 | Playlist page, owner controls | Done |
-| 8 | Library: history, liked, subscriptions + merged feed | Done |
-| 9 | Settings: account, password, avatar & cover | Done |
-| 10 | Toasts, Suspense/lazy routes, a11y pass, SEO titles | Done |
-| 11 | Community / tweets on channel (`/api/v1/tweets`), Studio dashboard stats | Done |
+1. Fork the repository  
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)  
+3. Commit your changes  
+4. Push to the branch and open a Pull Request  
 
-**Note:** The “liked” state on the watch page may not reflect a prior like until interaction if the video detail endpoint does not include a server-side “liked by me” flag — behavior depends on API payload.
+Please do not commit `.env` files or production secrets.
 
 ---
 
 ## License
 
-ISC (backend `package.json`). Add or align a root **LICENSE** file if you redistribute the project.
+ISC — see [`backend/package.json`](backend/package.json). Add a root `LICENSE` file if you redistribute the project.
+
+---
+
+## Author
+
+Built by [Neha-Codes295](https://github.com/Neha-Codes295).
